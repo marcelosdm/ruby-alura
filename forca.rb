@@ -1,17 +1,27 @@
-def da_boas_vindas
-	puts "Bem vindo ao jogo da forca"
-	puts "Qual é o seu nome?"
-	nome = gets.strip
-	puts "\n\n\n\n\n\n"
-	puts "Começaremos o jogo para você, #{nome}"
-	nome	
+require_relative 'ui'
+
+def palavra_mascarada chutes, palavra_secreta
+	mascara = ""
+	for letra in palavra_secreta.chars
+		if chutes.include? letra
+			mascara += letra
+		else
+			mascara += ' - '
+		end
+	end
+	mascara	
 end
 
-def sorteia_palavra_secreta
-	puts "Escolhendo uma palavra..."
-	palavra_secreta = "programador"
-	puts "Escolhida uma palavra com #{palavra_secreta.size} letras... boa sorte!"
-	palavra_secreta
+def pede_um_chute_valido chutes, erros, mascara
+	cabecalho_de_tentativa chutes, erros, mascara
+	loop do
+		chute = pede_um_chute
+		if chutes.include? chute
+			avisa_chute_repetido chute
+		else
+			return chute
+		end
+	end
 end
 
 def joga(nome)
@@ -22,62 +32,42 @@ def joga(nome)
 	pontos_ate_agora = 0
 
 	while erros < 5
-		chute = pede_um_chute chutes, erros
-		if chutes.include? chute
-			puts "Você já chutou #{chute}"
-			next
-		end
+		mascara = palavra_mascarada chutes, palavra_secreta
+		chute = pede_um_chute_valido chutes, erros, mascara
 		chutes << chute
-
-		chutou_uma_letra = chute.size == 1
-		if chutou_uma_letra
-			letra_procurada = chute[0]
-			palavra_secreta
-			total_encontrado = palavra_secreta.count letra_procurada
+		chutou_uma_unica_letra = chute.size == 1
+		if chutou_uma_unica_letra
+			total_encontrado = palavra_secreta.count(chute[0])
 			if total_encontrado == 0
-				puts "Letra não encontrada."
-				erros +=1
+				letra_nao_encontrada
+				erros += 1
 			else
-				puts "Letra encontrada #{total_encontrado} vezes."
+				letra_encontrada total_encontrado
 			end
-
 		else
 			acertou = chute == palavra_secreta
 			if acertou
-				puts "Parabéns! Acertou!"
+				mensagem_acertou
 				pontos_ate_agora += 100
 				break
 			else
-				puts "Que pena... errou!"
+				mensagem_errou
 				pontos_ate_agora -= 30
 				erros += 1
 			end
 		end
 	end
 
-	puts "Você ganhou #{pontos_ate_agora} pontos."
-	
+
+	resultado_pontos pontos_ate_agora
 end
 
-def pede_um_chute(chutes, erros)
-	puts "\n\n\n\n"
-	puts "Erros até agora: #{erros}"
-	puts "Chutes até agora: #{chutes}"
-	puts "Entre com a letra ou palavra"
-	chute = gets.strip
-	puts "Será que acertou? Você chutou #{chute}"
-	chute	
-end
 
-def nao_quer_jogar?
-	puts "Deseja jogar novamente? (S/N)"
-	quero_jogar = gets.strip
-	nao_quero_jogar = quero_jogar.upcase == "N"	
-end
+def jogo_da_forca
+	nome = da_boas_vindas
 
-nome = da_boas_vindas
-
-loop do
-	joga nome
-	break if nao_quer_jogar?
+	loop do
+		joga nome
+		break if nao_quer_jogar?	
+	end
 end
